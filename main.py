@@ -30,7 +30,8 @@ def sort_word_entropies():
         
     with open("sorted_words_entropies.txt", 'w') as f:
         f.writelines('word,entropy\n')
-        for entropy, word in h:
+        while h:
+            entropy, word = heapq.heappop(h)
             f.writelines(f"{word},{-entropy}\n")
 
 def print_initial_word_entropies(k): # loads top k initial word entropies 
@@ -51,13 +52,11 @@ def print_top_k_words(k):
     for word in possible_words:
         #print(word)
         heapq.heappush(top_k_words, (-get_entropy(word), word))
-    
-    top_k_words = top_k_words[:min(k, len(top_k_words))]
 
     print(f"====================TOP {k} WORDS====================\n")
 
-    for i in range(len(top_k_words)):
-        entropy, word = top_k_words[i]
+    for i in range(min(k, len(top_k_words))):
+        entropy, word = heapq.heappop(top_k_words)
         print(f"{word}: {-entropy}\n")
 
     print(f"=====================================================")
@@ -115,35 +114,7 @@ def update_possible_words(guess, result):
     possible_words = updated_possible_words
 
 def valid_state(guess, result, word):
-    n = len(guess)
-    
-    consider_letters = {}
-
-    for i in range(n):
-        consider_letters[i] = word[i]
-
-    # fail greens
-    for i in range(n):
-        if result[i] == "2":
-            if guess[i] != word[i]:
-                return False 
-
-            del consider_letters[i]
-    
-    # fail yellows 
-    for i in range(n):
-        if result[i] == "1":
-            if guess[i] == word[i] or guess[i] not in consider_letters.values():
-                return False
-
-            del consider_letters[i]
-    
-    # fail grays
-    for i in range(n):
-        if result[i] == "0" and guess[i] in consider_letters.values():
-            return False
-    
-    return True
+    return get_state(guess, word) == int(result, 3)
 
 def game():
     round = 1
